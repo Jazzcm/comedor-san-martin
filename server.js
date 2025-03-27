@@ -50,7 +50,21 @@ const handleDatabaseError = (res, err) => {
   });
 };
 
-// Rutas
+// Ruta raíz - Nueva ruta añadida
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Bienvenido al backend del Comedor Universitario',
+    endpoints: {
+      registrar: 'POST /registrar',
+      registros: 'GET /registros?turno=TURNO',
+      exportar: 'GET /exportar?turno=TURNO',
+      status: 'GET /status'
+    },
+    documentation: 'Consulta la documentación para más detalles'
+  });
+});
+
+// Rutas existentes
 app.post('/registrar', async (req, res) => {
   try {
     const { codigo, turno } = req.body;
@@ -59,7 +73,6 @@ app.post('/registrar', async (req, res) => {
       return res.status(400).json({ error: 'Código y turno son requeridos' });
     }
 
-    // Verificar duplicados
     const duplicateCheck = await pool.query(
       `SELECT id FROM registros 
        WHERE codigo = $1 AND turno = $2 AND DATE(fecha) = CURRENT_DATE`,
@@ -70,7 +83,6 @@ app.post('/registrar', async (req, res) => {
       return res.status(400).json({ error: 'Este empleado ya está registrado hoy' });
     }
 
-    // Insertar registro
     const result = await pool.query(
       `INSERT INTO registros (codigo, turno) 
        VALUES ($1, $2) 
@@ -129,13 +141,11 @@ app.get('/exportar', async (req, res) => {
       [turno]
     );
 
-    // Generar Excel
     const ws = XLSX.utils.json_to_sheet(result.rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Registros");
     const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
-    // Configurar headers
     res.setHeader('Content-Disposition', `attachment; filename=registros_${turno}.xlsx`);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     return res.send(buffer);
@@ -165,7 +175,10 @@ app.get('/status', async (req, res) => {
 
 // Manejo de rutas no encontradas
 app.use((req, res) => {
-  res.status(404).json({ error: 'Ruta no encontrada' });
+  res.status(404).json({ 
+    error: 'Ruta no encontrada',
+    suggestion: 'Prueba con /registrar, /registros?turno=TURNO o /status'
+  });
 });
 
 // Manejo centralizado de errores
