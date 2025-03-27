@@ -50,19 +50,6 @@ const handleDatabaseError = (res, err) => {
   });
 };
 
-// Ruta raíz - Nueva ruta añadida
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Bienvenido al backend del Comedor Universitario',
-    endpoints: {
-      registrar: 'POST /registrar',
-      registros: 'GET /registros?turno=TURNO',
-      exportar: 'GET /exportar?turno=TURNO',
-      status: 'GET /status'
-    },
-    documentation: 'Consulta la documentación para más detalles'
-  });
-});
 
 // Rutas existentes
 app.post('/registrar', async (req, res) => {
@@ -171,6 +158,21 @@ app.get('/status', async (req, res) => {
       error: err.message
     });
   }
+});
+
+// Ruta raíz - Nueva ruta añadida
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Bienvenido al backend del Comedor',
+    status: 'operativo',
+    endpoints: {
+      registrar: 'POST /registrar',
+      registros: 'GET /registros?turno=TURNO',
+      exportar: 'GET /exportar?turno=TURNO',
+      status: 'GET /status'
+    },
+    documentation: 'Consulta la documentación para más detalles'
+  });
 });
 
 // Manejo de rutas no encontradas
